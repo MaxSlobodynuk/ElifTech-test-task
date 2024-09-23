@@ -1,9 +1,10 @@
-import express from 'express';
-import pino from 'pino-http';
-import cors from 'cors';
-import { env } from './utils/env.js';
+import express from "express";
+import pino from "pino-http";
+import cors from "cors";
+import { env } from "./utils/env.js";
+import { getAllEvents, getEventById } from "./services/events.js";
 
-const PORT = Number(env('PORT', '3000'));
+const PORT = Number(env("PORT", "3000"));
 
 export const startServer = () => {
   const app = express();
@@ -14,26 +15,50 @@ export const startServer = () => {
   app.use(
     pino({
       transport: {
-        target: 'pino-pretty',
+        target: "pino-pretty",
       },
-    }),
+    })
   );
 
-  app.get('/', (req, res) => {
+  app.get("/", (req, res) => {
     res.json({
-      message: 'Hello world!',
+      message: "Hello world!",
     });
   });
 
-  app.use('*', (req, res, next) => {
+  app.get("/events", async (req, res) => {
+    const events = await getAllEvents();
+
+    res.status(200).json({
+      data: events,
+    });
+  });
+
+  app.get("/events/:eventId", async (req, res, next) => {
+    const { eventId } = req.params;
+    const events = await getEventById(eventId);
+
+    if (!events) {
+      res.status(404).json({
+        message: "event not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      data: events,
+    });
+  });
+
+  app.use((req, res, next) => {
     res.status(404).json({
-      message: 'Not found',
+      message: "Not found",
     });
   });
 
   app.use((err, req, res, next) => {
     res.status(500).json({
-      message: 'Something went wrong',
+      message: "Something went wrong",
       error: err.message,
     });
   });
