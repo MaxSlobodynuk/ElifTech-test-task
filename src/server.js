@@ -3,6 +3,7 @@ import pino from "pino-http";
 import cors from "cors";
 import { env } from "./utils/env.js";
 import eventsRouter from "./routers/events.js";
+import userRouter from "./routers/user.js"
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 
@@ -28,6 +29,8 @@ export const startServer = () => {
     });
   });
 
+
+  app.use(userRouter);
   app.use(eventsRouter);
 
   app.use(notFoundHandler);
